@@ -1,0 +1,21 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #b3c5ec;
+    margin: 0;
+    padding: 20px;
+}
+
+h1, h2 {
+    color: #333;
+}
+
+.button {
+    margin-right: 15px;
+    color: #0056b3;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.button:hover {
+    text-decoration: underline;
+}
