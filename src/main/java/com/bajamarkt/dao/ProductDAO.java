@@ -1,45 +1,47 @@
 package com.bajamarkt.dao;
 
-import com.bajamarkt.models.Category;
+import com.bajamarkt.models.Product;
 import com.bajamarkt.utils.DatabaseConnection;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CategoryDAO {
+public class ProductDAO {
 
-    public List<Category> getAllCategories() {
-        List<Category> categories = new ArrayList<>();
-        String sql = "SELECT * FROM categories";
+    public List<Product> getAllProducts() {
+        List<Product> products = new ArrayList<>();
+        String sql = "SELECT * FROM producto";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
-                Category category = new Category(
+                Product product = new Product(
                         rs.getInt("id"),
-                        rs.getString("name"),
-                        rs.getString("description"),
-                        rs.getBoolean("is_active")
+                        rs.getInt("id_categoria"),
+                        rs.getString("nombre"),
+                        rs.getDouble("precio"),
+                        rs.getInt("stock")
                 );
-                categories.add(category);
+                products.add(product);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return categories;
+        return products;
     }
 
-    public boolean addCategory(Category category) {
-        String sql = "INSERT INTO categories (name, description, is_active) VALUES (?, ?, ?)";
+    public boolean addProduct(Product product) {
+        String sql = "INSERT INTO producto (id_categoria, nombre, precio, stock) VALUES (?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setString(1, category.getName());
-            stmt.setString(2, category.getDescription());
-            stmt.setBoolean(3, category.isActive());
+            stmt.setInt(1, product.getCategoryId());
+            stmt.setString(2, product.getName());
+            stmt.setDouble(3, product.getPrice());
+            stmt.setInt(4, product.getStockQuantity());
 
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -48,8 +50,8 @@ public class CategoryDAO {
         }
     }
 
-    public boolean deleteCategory(int id) {
-        String sql = "DELETE FROM categories WHERE id = ?";
+    public boolean deleteProduct(int id) {
+        String sql = "DELETE FROM producto WHERE id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 

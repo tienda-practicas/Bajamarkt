@@ -5,7 +5,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DatabaseConnection {
-    private static final String URL = "jdbc:mariadb://localhost:3306/bajamarkt_db";
+    private static final String URL = "jdbc:mariadb://localhost:3306/bajamark_db";
     private static final String USER = "root";
     private static final String PASSWORD = "1234";
 

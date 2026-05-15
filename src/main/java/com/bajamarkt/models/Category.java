@@ -4,15 +4,15 @@ public class Category {
     private int id;
     private String name;
     private String description;
-    private boolean isActive;
+    private boolean active;
 
     public Category() {}
 
-    public Category(int id, String name, String description, boolean isActive) {
+    public Category(int id, String name, String description, boolean active) {
         this.id = id;
         this.name = name;
         this.description = description;
-        this.isActive = isActive;
+        this.active = active;
     }
 
     public int getId() { return id; }
@@ -24,6 +24,10 @@ public class Category {
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
 
-    public boolean isActive() { return isActive; }
-    public void setActive(boolean active) { isActive = active; }
+    public boolean isActive() { return active; }
+    public void setActive(boolean active) { this.active = active; }
+    public void setIsActive(boolean active) { this.active = active; }
+    public void setNombre(String name) { this.name = name; }
+    public void setDescripcion(String description) { this.description = description; }
+    public void setActivo(boolean active) { this.active = active; }
 }
