@@ -1,9 +1,9 @@
 /*M!999999\- enable the sandbox mode */ 
 -- MariaDB dump 10.19-11.7.2-MariaDB, for Win64 (AMD64)
 --
--- Host: localhost    Database: bajamark_db
+-- Host: localhost    Database: bajamarkt_db
 -- ------------------------------------------------------
--- Server version	12.0.2-MariaDB
+-- Server version	12.1.2-MariaDB
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -25,13 +25,13 @@ DROP TABLE IF EXISTS `categoria`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `categoria` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `nombre` varchar(50) NOT NULL,
-  `descripcion` varchar(100) NOT NULL,
-  `marca` varchar(50) DEFAULT NULL,
-  `activo` tinyint(1) DEFAULT 0,
+  `name` varchar(50) NOT NULL,
+  `description` varchar(100) NOT NULL,
+  `brand` varchar(50) DEFAULT NULL,
+  `active` tinyint(1) DEFAULT 0,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `nombre` (`nombre`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
+  UNIQUE KEY `name` (`name`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -40,6 +40,9 @@ CREATE TABLE `categoria` (
 
 LOCK TABLES `categoria` WRITE;
 /*!40000 ALTER TABLE `categoria` DISABLE KEYS */;
+INSERT INTO `categoria` VALUES
+(1,'Electrónica','Productos electrónicos','Samsung',1),
+(2,'Ropa','Prendas deportivas','Nike',1);
 /*!40000 ALTER TABLE `categoria` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -52,15 +55,15 @@ DROP TABLE IF EXISTS `producto`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `producto` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `nombre` varchar(50) NOT NULL,
-  `precio` float DEFAULT 0,
+  `name` varchar(50) NOT NULL,
+  `price` float DEFAULT 0,
   `stock` int(11) DEFAULT 0,
-  `imagen` varchar(150) DEFAULT NULL,
+  `image` varchar(150) DEFAULT NULL,
   `id_categoria` int(10) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `id_categoria` (`id_categoria`),
-  CONSTRAINT `producto_ibfk_1` FOREIGN KEY (`id_categoria`) REFERENCES `categoria` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
+  KEY `fk_producto_categoria` (`id_categoria`),
+  CONSTRAINT `fk_producto_categoria` FOREIGN KEY (`id_categoria`) REFERENCES `categoria` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -69,11 +72,14 @@ CREATE TABLE `producto` (
 
 LOCK TABLES `producto` WRITE;
 /*!40000 ALTER TABLE `producto` DISABLE KEYS */;
+INSERT INTO `producto` VALUES
+(1,'TV Samsung',599.99,10,'tv.jpg',1),
+(2,'Sudadera Nike',79.99,20,'nike.jpg',2);
 /*!40000 ALTER TABLE `producto` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
--- Dumping routines for database 'bajamark_db'
+-- Dumping routines for database 'bajamarkt_db'
 --
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -85,4 +91,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*M!100616 SET NOTE_VERBOSITY=@OLD_NOTE_VERBOSITY */;
 
--- Dump completed on 2026-05-15 11:23:29
+-- Dump completed on 2026-05-15 13:05:18
