@@ -4,6 +4,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const form = document.getElementById("productForm");
     form.addEventListener("submit", createProduct);
+
+    // Live image preview as the user types/pastes a URL
+    const imageInput = document.getElementById("image");
+    const imagePreview = document.getElementById("imagePreview");
+
+    imageInput.addEventListener("input", () => {
+        const url = imageInput.value.trim();
+        if (url) {
+            imagePreview.src = url;
+            imagePreview.classList.remove("d-none");
+        } else {
+            imagePreview.classList.add("d-none");
+        }
+    });
+
+    imagePreview.addEventListener("error", () => {
+        imagePreview.classList.add("d-none"); // Hide on broken URL
+    });
 });
 
 function fetchProducts() {
@@ -14,15 +32,23 @@ function fetchProducts() {
             tableBody.innerHTML = "";
 
             data.forEach(product => {
-                const stockBadge = product.stockQuantity > 10
-                    ? `<span class="badge bg-success">${product.stockQuantity}</span>`
-                    : `<span class="badge bg-warning text-dark">${product.stockQuantity} (Low)</span>`;
+                const stockBadge = product.stock > 10
+                    ? `<span class="badge bg-success">${product.stock}</span>`
+                    : `<span class="badge bg-warning text-dark">${product.stock} (Low)</span>`;
+
+                const imageCell = product.image
+                    ? `<img src="${product.image}" alt="${product.name}"
+                            style="width: 60px; height: 60px; object-fit: cover;"
+                            class="rounded"
+                            onerror="this.style.display='none'">`
+                    : `<span class="text-muted small">No image</span>`;
 
                 const row = document.createElement("tr");
                 row.innerHTML = `
                     <td>${product.id}</td>
+                    <td>${imageCell}</td>
                     <td><strong>${product.name}</strong></td>
-                    <td>${product.categoryId}</td>
+                    <td>${product.idCategory}</td>
                     <td>€${product.price.toFixed(2)}</td>
                     <td>${stockBadge}</td>
                     <td>
@@ -41,7 +67,7 @@ function loadCategoryOptions() {
         .then(data => {
             const select = document.getElementById("categoryId");
             data.forEach(category => {
-                if (category.active) { // Only show active categories
+                if (category.active) {
                     const option = document.createElement("option");
                     option.value = category.id;
                     option.textContent = category.name;
@@ -58,13 +84,15 @@ function createProduct(event) {
     const categoryId = document.getElementById("categoryId").value;
     const name = document.getElementById("name").value;
     const price = document.getElementById("price").value;
-    const stockQuantity = document.getElementById("stockQuantity").value;
+    const stock = document.getElementById("stockQuantity").value;
+    const image = document.getElementById("image").value.trim();
 
     const newProduct = {
-        categoryId: parseInt(categoryId),
         name: name,
         price: parseFloat(price),
-        stockQuantity: parseInt(stockQuantity)
+        stock: parseInt(stock),
+        image: image,                    // image URL (may be empty)
+        idCategory: parseInt(categoryId)
     };
 
     fetch('api/products', {
@@ -77,6 +105,7 @@ function createProduct(event) {
         .then(response => {
             if (response.ok) {
                 document.getElementById("productForm").reset();
+                document.getElementById("imagePreview").classList.add("d-none");
                 fetchProducts();
             } else {
                 alert("Error creating product");

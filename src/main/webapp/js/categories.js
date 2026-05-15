@@ -38,12 +38,14 @@ function createCategory(event) {
 
     const name = document.getElementById("name").value;
     const description = document.getElementById("description").value;
-    const isActive = document.getElementById("isActive").checked;
+    const active = document.getElementById("isActive").checked;
 
+    // Field names must match the Java model (Category.java) so Gson can map them
     const newCategory = {
         name: name,
         description: description,
-        isActive: isActive
+        brand: "",       // not in the form yet; send empty string
+        active: active   // <-- was "isActive", which Gson ignored
     };
 
     fetch('api/categories', {
