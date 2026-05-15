@@ -1,0 +1,2 @@
+categoria[#id,nombre,descripcion,marca,activo]
+producto[#id, nombre,precio,stock, imagen,-id_categoria]
