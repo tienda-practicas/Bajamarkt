@@ -7,7 +7,7 @@ import java.sql.SQLException;
 public class DatabaseConnection {
     private static final String URL = "jdbc:mariadb://localhost:3306/bajamarkt_db";
     private static final String USER = "root";
-    private static final String PASSWORD = "1234";
+    private static final String PASSWORD = "1994";
 
     public static Connection getConnection() throws SQLException {
         try {
