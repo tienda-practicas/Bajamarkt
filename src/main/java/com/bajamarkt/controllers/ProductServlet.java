@@ -24,11 +24,27 @@ public class ProductServlet extends HttpServlet {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
 
-        List<Product> products = productDAO.getAllProducts();
-        String json = gson.toJson(products);
-
+        String idParam = request.getParameter("id");
         PrintWriter out = response.getWriter();
-        out.print(json);
+
+        if (idParam != null && !idParam.isEmpty()) {
+            try {
+                int id = Integer.parseInt(idParam);
+                Product product = productDAO.getProductById(id);
+                if (product != null) {
+                    out.print(gson.toJson(product));
+                } else {
+                    response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    out.print("{\"error\": \"Product not found\"}");
+                }
+            } catch (NumberFormatException e) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                out.print("{\"error\": \"Invalid ID\"}");
+            }
+        } else {
+            List<Product> products = productDAO.getAllProducts();
+            out.print(gson.toJson(products));
+        }
         out.flush();
     }
 
@@ -49,6 +65,34 @@ public class ProductServlet extends HttpServlet {
         } else {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             out.print("{\"error\": \"Failed to create product\"}");
+        }
+        out.flush();
+    }
+
+    @Override
+    protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
+        BufferedReader reader = request.getReader();
+        Product product = gson.fromJson(reader, Product.class);
+
+        PrintWriter out = response.getWriter();
+
+        if (product == null || product.getId() <= 0) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            out.print("{\"error\": \"Missing or invalid product ID\"}");
+            out.flush();
+            return;
+        }
+
+        boolean success = productDAO.updateProduct(product);
+
+        if (success) {
+            out.print("{\"message\": \"Product updated successfully\"}");
+        } else {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            out.print("{\"error\": \"Failed to update product\"}");
         }
         out.flush();
     }

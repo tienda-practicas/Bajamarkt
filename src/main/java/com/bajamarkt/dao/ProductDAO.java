@@ -34,6 +34,30 @@ public class ProductDAO {
         return products;
     }
 
+    public Product getProductById(int id) {
+        String sql = "SELECT * FROM product WHERE id = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return new Product(
+                            rs.getInt("id"),
+                            rs.getString("name"),
+                            rs.getDouble("price"),
+                            rs.getInt("stock"),
+                            rs.getString("image"),
+                            rs.getInt("id_category")
+                    );
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public boolean addProduct(Product product) {
         String sql = "INSERT INTO product (name, price, stock, image, id_category) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -44,6 +68,25 @@ public class ProductDAO {
             stmt.setInt(3, product.getStock());
             stmt.setString(4, product.getImage());
             stmt.setInt(5, product.getIdCategory());
+
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean updateProduct(Product product) {
+        String sql = "UPDATE product SET name = ?, price = ?, stock = ?, image = ?, id_category = ? WHERE id = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, product.getName());
+            stmt.setDouble(2, product.getPrice());
+            stmt.setInt(3, product.getStock());
+            stmt.setString(4, product.getImage());
+            stmt.setInt(5, product.getIdCategory());
+            stmt.setInt(6, product.getId());
 
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {

@@ -26,15 +26,17 @@
         <div class="col-md-4 mb-4">
             <div class="card shadow-sm">
                 <div class="card-header bg-success text-white">
-                    <h5 class="mb-0">Add New Product</h5>
+                    <h5 class="mb-0" id="formTitle">Add New Product</h5>
                 </div>
                 <div class="card-body">
                     <form id="productForm">
+                        <!-- Hidden field: holds the ID when editing -->
+                        <input type="hidden" id="productId" value="">
+
                         <div class="mb-3">
                             <label for="categoryId" class="form-label">Category</label>
                             <select class="form-select" id="categoryId" required>
                                 <option value="" disabled selected>Select a category...</option>
-                                <!-- Categories will be loaded here by JS -->
                             </select>
                         </div>
                         <div class="mb-3">
@@ -59,7 +61,8 @@
                             <img id="imagePreview" src="" alt=""
                                  class="img-thumbnail d-none" style="max-height: 150px;">
                         </div>
-                        <button type="submit" class="btn btn-success w-100">Save Product</button>
+                        <button type="submit" class="btn btn-success w-100" id="submitBtn">Save Product</button>
+                        <button type="button" class="btn btn-secondary w-100 mt-2 d-none" id="cancelBtn">Cancel Edit</button>
                     </form>
                 </div>
             </div>

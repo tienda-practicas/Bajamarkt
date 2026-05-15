@@ -2,10 +2,10 @@ document.addEventListener("DOMContentLoaded", () => {
     fetchProducts();
     loadCategoryOptions();
 
-    const form = document.getElementById("productForm");
-    form.addEventListener("submit", createProduct);
+    document.getElementById("productForm").addEventListener("submit", saveProduct);
+    document.getElementById("cancelBtn").addEventListener("click", resetForm);
 
-    // Live image preview as the user types/pastes a URL
+    // Live image preview
     const imageInput = document.getElementById("image");
     const imagePreview = document.getElementById("imagePreview");
 
@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     imagePreview.addEventListener("error", () => {
-        imagePreview.classList.add("d-none"); // Hide on broken URL
+        imagePreview.classList.add("d-none");
     });
 });
 
@@ -52,6 +52,7 @@ function fetchProducts() {
                     <td>€${product.price.toFixed(2)}</td>
                     <td>${stockBadge}</td>
                     <td>
+                        <button class="btn btn-sm btn-primary me-1" onclick="editProduct(${product.id})">Edit</button>
                         <button class="btn btn-sm btn-danger" onclick="deleteProduct(${product.id})">Delete</button>
                     </td>
                 `;
@@ -66,6 +67,9 @@ function loadCategoryOptions() {
         .then(response => response.json())
         .then(data => {
             const select = document.getElementById("categoryId");
+            // Keep the placeholder, remove any other previously loaded options
+            select.querySelectorAll("option:not([disabled])").forEach(opt => opt.remove());
+
             data.forEach(category => {
                 if (category.active) {
                     const option = document.createElement("option");
@@ -78,47 +82,95 @@ function loadCategoryOptions() {
         .catch(error => console.error("Error fetching categories for select:", error));
 }
 
-function createProduct(event) {
+// Decides whether to POST (create) or PUT (update) based on whether the hidden ID is set
+function saveProduct(event) {
     event.preventDefault();
 
+    const id = document.getElementById("productId").value;
     const categoryId = document.getElementById("categoryId").value;
     const name = document.getElementById("name").value;
     const price = document.getElementById("price").value;
     const stock = document.getElementById("stockQuantity").value;
     const image = document.getElementById("image").value.trim();
 
-    const newProduct = {
+    const product = {
         name: name,
         price: parseFloat(price),
         stock: parseInt(stock),
-        image: image,                    // image URL (may be empty)
+        image: image,
         idCategory: parseInt(categoryId)
     };
 
+    let method;
+    if (id) {
+        product.id = parseInt(id);
+        method = "PUT";
+    } else {
+        method = "POST";
+    }
+
     fetch('api/products', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(newProduct)
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(product)
     })
         .then(response => {
             if (response.ok) {
-                document.getElementById("productForm").reset();
-                document.getElementById("imagePreview").classList.add("d-none");
+                resetForm();
                 fetchProducts();
             } else {
-                alert("Error creating product");
+                alert(id ? "Error updating product" : "Error creating product");
             }
         })
         .catch(error => console.error("Error:", error));
 }
 
+function editProduct(id) {
+    fetch(`api/products?id=${id}`)
+        .then(response => response.json())
+        .then(product => {
+            document.getElementById("productId").value = product.id;
+            document.getElementById("categoryId").value = product.idCategory;
+            document.getElementById("name").value = product.name;
+            document.getElementById("price").value = product.price;
+            document.getElementById("stockQuantity").value = product.stock;
+            document.getElementById("image").value = product.image || "";
+
+            // Show preview if there's an image
+            const imagePreview = document.getElementById("imagePreview");
+            if (product.image) {
+                imagePreview.src = product.image;
+                imagePreview.classList.remove("d-none");
+            } else {
+                imagePreview.classList.add("d-none");
+            }
+
+            // Switch UI to edit mode
+            document.getElementById("formTitle").textContent = `Edit Product #${product.id}`;
+            document.getElementById("submitBtn").textContent = "Update Product";
+            document.getElementById("submitBtn").classList.remove("btn-success");
+            document.getElementById("submitBtn").classList.add("btn-primary");
+            document.getElementById("cancelBtn").classList.remove("d-none");
+
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        })
+        .catch(error => console.error("Error loading product:", error));
+}
+
+function resetForm() {
+    document.getElementById("productForm").reset();
+    document.getElementById("productId").value = "";
+    document.getElementById("imagePreview").classList.add("d-none");
+    document.getElementById("formTitle").textContent = "Add New Product";
+    document.getElementById("submitBtn").textContent = "Save Product";
+    document.getElementById("submitBtn").classList.remove("btn-primary");
+    document.getElementById("submitBtn").classList.add("btn-success");
+    document.getElementById("cancelBtn").classList.add("d-none");
+}
+
 function deleteProduct(id) {
     if (confirm("Are you sure you want to delete this product?")) {
-        fetch(`api/products?id=${id}`, {
-            method: 'DELETE'
-        })
+        fetch(`api/products?id=${id}`, { method: 'DELETE' })
             .then(response => {
                 if (response.ok) {
                     fetchProducts();
