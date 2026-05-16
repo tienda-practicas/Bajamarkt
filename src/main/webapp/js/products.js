@@ -7,17 +7,14 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("productForm").addEventListener("submit", saveProduct);
     document.getElementById("cancelBtn").addEventListener("click", resetForm);
 
-    // Debounced text inputs (300ms after typing stops, so we don't fire on every keystroke)
     document.getElementById("searchInput").addEventListener("input", debouncedFetch);
     document.getElementById("priceMin").addEventListener("input", debouncedFetch);
     document.getElementById("priceMax").addEventListener("input", debouncedFetch);
 
-    // Instant filters (dropdowns fire only on change, no debounce needed)
     document.getElementById("categoryFilter").addEventListener("change", fetchProducts);
     document.getElementById("stockFilter").addEventListener("change", fetchProducts);
     document.getElementById("clearFiltersBtn").addEventListener("click", clearFilters);
 
-    // Live image preview
     const imageInput = document.getElementById("image");
     const imagePreview = document.getElementById("imagePreview");
     imageInput.addEventListener("input", () => {
@@ -37,7 +34,6 @@ function debouncedFetch() {
     searchDebounce = setTimeout(fetchProducts, 300);
 }
 
-// Builds the query string from the current filter inputs
 function buildQueryString() {
     const search   = document.getElementById("searchInput").value.trim();
     const category = document.getElementById("categoryFilter").value;
@@ -90,6 +86,10 @@ function renderProducts(products) {
                 : `<span class="text-muted small">No image</span>`;
 
             const row = document.createElement("tr");
+            // Make the row clickable; clicking opens the product detail page
+            row.className = "clickable-row";
+            row.onclick = () => { window.location.href = `product-detail.html?id=${product.id}`; };
+
             row.innerHTML = `
                 <td>${product.id}</td>
                 <td>${imageCell}</td>
@@ -97,7 +97,7 @@ function renderProducts(products) {
                 <td>${product.idCategory}</td>
                 <td>€${product.price.toFixed(2)}</td>
                 <td>${stockBadge}</td>
-                <td>
+                <td onclick="event.stopPropagation()">
                     <button class="btn btn-sm btn-primary me-1" onclick="editProduct(${product.id})">Edit</button>
                     <button class="btn btn-sm btn-danger" onclick="deleteProduct(${product.id})">Delete</button>
                 </td>
@@ -122,7 +122,6 @@ function loadCategoryOptions() {
     fetch('api/categories')
         .then(response => response.json())
         .then(data => {
-            // Form select (active categories only — for creating products)
             const formSelect = document.getElementById("categoryId");
             formSelect.querySelectorAll("option:not([disabled])").forEach(o => o.remove());
             data.forEach(c => {
@@ -134,7 +133,6 @@ function loadCategoryOptions() {
                 }
             });
 
-            // Filter dropdown (all categories, even inactive ones — for filtering existing products)
             const filterSelect = document.getElementById("categoryFilter");
             filterSelect.querySelectorAll("option:not([value='all'])").forEach(o => o.remove());
             data.forEach(c => {

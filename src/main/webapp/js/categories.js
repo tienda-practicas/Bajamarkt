@@ -33,12 +33,10 @@ function fetchCategories() {
         .catch(error => console.error("Error fetching categories:", error));
 }
 
-// Formats a SQL timestamp ("2026-05-15 12:34:56" or ISO) into something readable
 function formatDate(value) {
     if (!value) return '<span class="text-muted small">-</span>';
     const date = new Date(value);
-    if (isNaN(date.getTime())) return value; // fallback if parsing fails
-
+    if (isNaN(date.getTime())) return value;
     return date.toLocaleString('es-ES', {
         year: 'numeric', month: '2-digit', day: '2-digit',
         hour: '2-digit', minute: '2-digit'
@@ -63,13 +61,17 @@ function renderCategories(categories) {
                 : '<span class="badge bg-danger">Inactive</span>';
 
             const row = document.createElement("tr");
+            // Make the row clickable; clicking opens the detail page
+            row.className = "clickable-row";
+            row.onclick = () => { window.location.href = `category-detail.html?id=${category.id}`; };
+
             row.innerHTML = `
                 <td>${category.id}</td>
                 <td><strong>${category.name}</strong></td>
                 <td>${category.description}</td>
                 <td>${statusBadge}</td>
                 <td><small>${formatDate(category.createdAt)}</small></td>
-                <td>
+                <td onclick="event.stopPropagation()">
                     <button class="btn btn-sm btn-primary me-1" onclick="editCategory(${category.id})">Edit</button>
                     <button class="btn btn-sm btn-danger" onclick="deleteCategory(${category.id})">Delete</button>
                 </td>
@@ -95,7 +97,6 @@ function saveCategory(event) {
     const description = document.getElementById("description").value;
     const active = document.getElementById("isActive").checked;
 
-    // No brand, no createdAt — the database handles createdAt automatically
     const category = { name, description, active };
 
     let method;
