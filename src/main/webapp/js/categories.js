@@ -50,7 +50,7 @@ function renderCategories(categories) {
     if (categories.length === 0) {
         tableBody.innerHTML = `
             <tr>
-                <td colspan="6" class="text-center text-muted py-4">
+                <td colspan="5" class="text-center text-muted py-4">
                     No categories match your filters.
                 </td>
             </tr>`;
@@ -66,7 +66,6 @@ function renderCategories(categories) {
             row.onclick = () => { window.location.href = `category-detail.html?id=${category.id}`; };
 
             row.innerHTML = `
-                <td>${category.id}</td>
                 <td><strong>${category.name}</strong></td>
                 <td>${category.description}</td>
                 <td>${statusBadge}</td>
