@@ -91,10 +91,10 @@ function renderProducts(products) {
             row.onclick = () => { window.location.href = `product-detail.html?id=${product.id}`; };
 
             row.innerHTML = `
-                <td>${product.id}</td>
+                
                 <td>${imageCell}</td>
                 <td><strong>${product.name}</strong></td>
-                <td>${product.idCategory}</td>
+                <td>${product.categoryName}</td>
                 <td>€${product.price.toFixed(2)}</td>
                 <td>${stockBadge}</td>
                 <td onclick="event.stopPropagation()">
