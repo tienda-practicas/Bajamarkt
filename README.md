@@ -132,9 +132,10 @@ The project includes the following version tags:
 <ul>
   <li><strong>v1.0</strong></li>
   <li><strong>v1.1</strong></li>
+  <li><strong>v1.2</strong></li>
 </ul>
 
-The final version, <strong>v1.1</strong>, is published as a GitHub Release.
+The final version, <strong>v1.2</strong>, is published as a GitHub Release.
 
 ---
 
