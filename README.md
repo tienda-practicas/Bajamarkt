@@ -111,24 +111,25 @@ Open your browser and navigate to:
 http://localhost:8080
 ```
 
-## Git Flow 
+## Git Flow
+
 The project follows the Git Flow branching model with the following branches:
 
-main – Stable production-ready version
-develop – Integration branch
-feature/* – New feature branches
+- **main** – Stable production-ready version
+- **develop** – Integration branch
+- **feature/*** – New feature branches
 
 All features are developed in separate branches and merged through Pull Requests reviewed by another team member.
 
-## Versioning 
-Versioning
+## Versioning
 
 The project includes the following version tags:
 
-v1.0
-v1.1
+- **v1.0**
+- **v1.1**
 
-The final version, v1.1, is published as a GitHub Release.
+The final version, **v1.1**, is published as a GitHub Release.
 
-## License 
+## License
+
 This project was developed for educational purposes as part of a software development training program.
