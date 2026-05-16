@@ -1,0 +1,153 @@
+/* ============================================
+   Detail pages — shared styles
+   ============================================ */
+
+/* Generic definition list used for "label: value" rows */
+.detail-list {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    column-gap: 1.5rem;
+    row-gap: 0.85rem;
+    margin: 0;
+}
+
+.detail-list dt {
+    font-weight: 600;
+    color: #6c757d;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    padding-top: 0.15rem;
+}
+
+.detail-list dd {
+    margin: 0;
+    color: #212529;
+    word-break: break-word;
+}
+
+/* Category detail — colored top stripe on the header */
+.detail-header {
+    border-top: 4px solid #0d6efd;
+}
+
+/* ============================================
+   Product detail — image showcase
+   ============================================ */
+.product-image-col {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    padding: 2rem;
+}
+
+.product-image {
+    max-width: 100%;
+    max-height: 380px;
+    object-fit: contain;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    background: white;
+}
+
+/* Big price tag */
+.price-tag {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #198754;
+    line-height: 1;
+}
+
+.price-tag .price-symbol {
+    font-size: 1.5rem;
+    vertical-align: super;
+    margin-right: 0.15rem;
+    color: #6c757d;
+}
+
+/* Category link with hover effect */
+.category-link {
+    display: inline-block;
+    color: #0d6efd;
+    text-decoration: none;
+    font-weight: 500;
+    border-bottom: 1px dashed transparent;
+    transition: border-color 0.15s ease-in-out;
+}
+
+.category-link:hover {
+    border-bottom-color: #0d6efd;
+}
+
+/* ============================================
+   Product list inside the category detail page
+   ============================================ */
+.product-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid #e9ecef;
+    text-decoration: none;
+    color: inherit;
+    transition: background-color 0.15s ease-in-out;
+}
+
+.product-row:last-child {
+    border-bottom: none;
+}
+
+.product-row:hover {
+    background-color: #f8f9fa;
+    color: inherit;
+}
+
+.product-row img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 0.35rem;
+    background: #f1f3f5;
+    flex-shrink: 0;
+}
+
+.product-row .info {
+    flex: 1;
+    min-width: 0; /* allows text-truncate inside flex */
+}
+
+.product-row .info .name {
+    font-weight: 600;
+    margin-bottom: 0.1rem;
+}
+
+.product-row .info .meta {
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+.product-row .price {
+    font-weight: 600;
+    color: #198754;
+    white-space: nowrap;
+}
+
+/* Empty state inside the products list */
+.empty-state {
+    padding: 2.5rem 1rem;
+    text-align: center;
+    color: #6c757d;
+}
+
+/* ============================================
+   Make table rows in listings feel clickable
+   ============================================ */
+.clickable-row {
+    cursor: pointer;
+}
+
+.clickable-row:hover {
+    background-color: #eef4ff !important;
+}

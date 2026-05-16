@@ -1,2 +1,2 @@
-categoria[#id,nombre,descripcion,marca,activo]
-producto[#id, nombre,precio,stock, imagen,-id_categoria]
+category[#id,name,description,create_at,active]
+product[#id, name,price,stock, image,-id_category]
