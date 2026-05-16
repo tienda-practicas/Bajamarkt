@@ -71,3 +71,64 @@ The design process included:
 ```bash
 git clone https://github.com/tienda-practicas/Bajamarkt.git
 cd Bajamarkt
+```
+
+### 2. Configure the Database
+
+```bash
+Edit the src/main/resources/application.properties file and set your database credentials.
+```
+
+### 3. Build the Project
+
+```bash
+Windows
+
+mvnw.cmd clean install
+
+Linux/macOS
+
+./mvnw clean install
+```
+
+### 4. Run the application
+
+```bash
+Windows
+
+mvnw.cmd spring-boot:run
+
+Linux/macOS
+
+./mvnw spring-boot:run
+```
+
+### 5. Open the Application
+
+```bash
+Open your browser and navigate to:
+
+http://localhost:8080
+```
+
+## Git Flow 
+The project follows the Git Flow branching model with the following branches:
+
+main – Stable production-ready version
+develop – Integration branch
+feature/* – New feature branches
+
+All features are developed in separate branches and merged through Pull Requests reviewed by another team member.
+
+## Versioning 
+Versioning
+
+The project includes the following version tags:
+
+v1.0
+v1.1
+
+The final version, v1.1, is published as a GitHub Release.
+
+## License 
+This project was developed for educational purposes as part of a software development training program.
