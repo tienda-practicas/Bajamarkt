@@ -27,6 +27,7 @@ public class ProductServlet extends HttpServlet {
         String idParam = request.getParameter("id");
         PrintWriter out = response.getWriter();
 
+        // ?id=X  → return a single product (used by "Edit")
         if (idParam != null && !idParam.isEmpty()) {
             try {
                 int id = Integer.parseInt(idParam);
@@ -41,10 +42,20 @@ public class ProductServlet extends HttpServlet {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 out.print("{\"error\": \"Invalid ID\"}");
             }
-        } else {
-            List<Product> products = productDAO.getAllProducts();
-            out.print(gson.toJson(products));
+            out.flush();
+            return;
         }
+
+        // Otherwise: optional search/filter params. Missing/blank ones become null.
+        String search       = nullIfBlank(request.getParameter("search"));
+        Integer idCategory  = parseIntOrNull(request.getParameter("category"));
+        Double priceMin     = parseDoubleOrNull(request.getParameter("priceMin"));
+        Double priceMax     = parseDoubleOrNull(request.getParameter("priceMax"));
+        String stockLevel   = nullIfBlank(request.getParameter("stock"));
+        if ("all".equalsIgnoreCase(stockLevel)) stockLevel = null;
+
+        List<Product> products = productDAO.searchProducts(search, idCategory, priceMin, priceMax, stockLevel);
+        out.print(gson.toJson(products));
         out.flush();
     }
 
@@ -120,5 +131,20 @@ public class ProductServlet extends HttpServlet {
             out.print("{\"error\": \"Missing product ID\"}");
         }
         out.flush();
+    }
+
+    // --- helpers ---
+    private static String nullIfBlank(String s) {
+        return (s == null || s.isBlank()) ? null : s;
+    }
+
+    private static Integer parseIntOrNull(String s) {
+        if (s == null || s.isBlank() || "all".equalsIgnoreCase(s)) return null;
+        try { return Integer.parseInt(s); } catch (NumberFormatException e) { return null; }
+    }
+
+    private static Double parseDoubleOrNull(String s) {
+        if (s == null || s.isBlank()) return null;
+        try { return Double.parseDouble(s); } catch (NumberFormatException e) { return null; }
     }
 }

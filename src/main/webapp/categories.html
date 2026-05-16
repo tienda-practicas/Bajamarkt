@@ -29,7 +29,6 @@
                 </div>
                 <div class="card-body">
                     <form id="categoryForm">
-                        <!-- Hidden field: holds the ID when editing -->
                         <input type="hidden" id="categoryId" value="">
 
                         <div class="mb-3">
@@ -39,10 +38,6 @@
                         <div class="mb-3">
                             <label for="description" class="form-label">Description</label>
                             <textarea class="form-control" id="description" rows="3" required></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label for="brand" class="form-label">Brand</label>
-                            <input type="text" class="form-control" id="brand">
                         </div>
                         <div class="mb-3 form-check">
                             <input type="checkbox" class="form-check-input" id="isActive" checked>
@@ -56,9 +51,31 @@
         </div>
         <div class="col-md-8">
             <div class="card shadow-sm">
-                <div class="card-header bg-dark text-white">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Category List</h5>
+                    <span class="badge bg-light text-dark" id="resultCount">0 results</span>
                 </div>
+
+                <div class="card-body border-bottom bg-light">
+                    <div class="row g-2">
+                        <div class="col-md-7">
+                            <input type="text" class="form-control" id="searchInput"
+                                   placeholder="Search by name or description...">
+                        </div>
+                        <div class="col-md-4">
+                            <select class="form-select" id="statusFilter">
+                                <option value="all">All statuses</option>
+                                <option value="active">Active only</option>
+                                <option value="inactive">Inactive only</option>
+                            </select>
+                        </div>
+                        <div class="col-md-1">
+                            <button type="button" class="btn btn-outline-secondary w-100" id="clearFiltersBtn"
+                                    title="Clear filters">✕</button>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="card-body p-0">
                     <div class="table-responsive">
                         <table class="table table-striped table-hover mb-0 align-middle">
@@ -67,8 +84,8 @@
                                 <th>ID</th>
                                 <th>Name</th>
                                 <th>Description</th>
-                                <th>Brand</th>
                                 <th>Status</th>
+                                <th>Created At</th>
                                 <th>Actions</th>
                             </tr>
                             </thead>

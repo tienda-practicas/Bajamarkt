@@ -1,68 +1,112 @@
+let searchDebounce = null;
+
 document.addEventListener("DOMContentLoaded", () => {
     fetchCategories();
 
     document.getElementById("categoryForm").addEventListener("submit", saveCategory);
     document.getElementById("cancelBtn").addEventListener("click", resetForm);
+
+    document.getElementById("searchInput").addEventListener("input", () => {
+        clearTimeout(searchDebounce);
+        searchDebounce = setTimeout(fetchCategories, 300);
+    });
+    document.getElementById("statusFilter").addEventListener("change", fetchCategories);
+    document.getElementById("clearFiltersBtn").addEventListener("click", clearFilters);
 });
 
+function buildQueryString() {
+    const search = document.getElementById("searchInput").value.trim();
+    const status = document.getElementById("statusFilter").value;
+
+    const params = new URLSearchParams();
+    if (search) params.append("search", search);
+    if (status && status !== "all") params.append("status", status);
+
+    const query = params.toString();
+    return query ? `?${query}` : "";
+}
+
 function fetchCategories() {
-    fetch('api/categories')
+    fetch('api/categories' + buildQueryString())
         .then(response => response.json())
-        .then(data => {
-            const tableBody = document.getElementById("categoryTableBody");
-            tableBody.innerHTML = "";
-
-            data.forEach(category => {
-                const statusBadge = category.active
-                    ? '<span class="badge bg-success">Active</span>'
-                    : '<span class="badge bg-danger">Inactive</span>';
-
-                const row = document.createElement("tr");
-                row.innerHTML = `
-                    <td>${category.id}</td>
-                    <td><strong>${category.name}</strong></td>
-                    <td>${category.description}</td>
-                    <td>${category.brand || '<span class="text-muted small">-</span>'}</td>
-                    <td>${statusBadge}</td>
-                    <td>
-                        <button class="btn btn-sm btn-primary me-1" onclick="editCategory(${category.id})">Edit</button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteCategory(${category.id})">Delete</button>
-                    </td>
-                `;
-                tableBody.appendChild(row);
-            });
-        })
+        .then(renderCategories)
         .catch(error => console.error("Error fetching categories:", error));
 }
 
-// Decides whether to POST (create) or PUT (update) based on whether the hidden ID is set
+// Formats a SQL timestamp ("2026-05-15 12:34:56" or ISO) into something readable
+function formatDate(value) {
+    if (!value) return '<span class="text-muted small">-</span>';
+    const date = new Date(value);
+    if (isNaN(date.getTime())) return value; // fallback if parsing fails
+
+    return date.toLocaleString('es-ES', {
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit'
+    });
+}
+
+function renderCategories(categories) {
+    const tableBody = document.getElementById("categoryTableBody");
+    tableBody.innerHTML = "";
+
+    if (categories.length === 0) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="6" class="text-center text-muted py-4">
+                    No categories match your filters.
+                </td>
+            </tr>`;
+    } else {
+        categories.forEach(category => {
+            const statusBadge = category.active
+                ? '<span class="badge bg-success">Active</span>'
+                : '<span class="badge bg-danger">Inactive</span>';
+
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${category.id}</td>
+                <td><strong>${category.name}</strong></td>
+                <td>${category.description}</td>
+                <td>${statusBadge}</td>
+                <td><small>${formatDate(category.createdAt)}</small></td>
+                <td>
+                    <button class="btn btn-sm btn-primary me-1" onclick="editCategory(${category.id})">Edit</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteCategory(${category.id})">Delete</button>
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
+    }
+
+    document.getElementById("resultCount").textContent = `${categories.length} results`;
+}
+
+function clearFilters() {
+    document.getElementById("searchInput").value = "";
+    document.getElementById("statusFilter").value = "all";
+    fetchCategories();
+}
+
 function saveCategory(event) {
     event.preventDefault();
 
     const id = document.getElementById("categoryId").value;
     const name = document.getElementById("name").value;
     const description = document.getElementById("description").value;
-    const brand = document.getElementById("brand").value;
     const active = document.getElementById("isActive").checked;
 
-    const category = {
-        name: name,
-        description: description,
-        brand: brand,
-        active: active
-    };
+    // No brand, no createdAt — the database handles createdAt automatically
+    const category = { name, description, active };
 
-    let method, url;
+    let method;
     if (id) {
         category.id = parseInt(id);
         method = "PUT";
-        url = 'api/categories';
     } else {
         method = "POST";
-        url = 'api/categories';
     }
 
-    fetch(url, {
+    fetch('api/categories', {
         method: method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(category)
@@ -78,7 +122,6 @@ function saveCategory(event) {
         .catch(error => console.error("Error:", error));
 }
 
-// Fetches the category by ID and fills the form with its data
 function editCategory(id) {
     fetch(`api/categories?id=${id}`)
         .then(response => response.json())
@@ -86,10 +129,8 @@ function editCategory(id) {
             document.getElementById("categoryId").value = category.id;
             document.getElementById("name").value = category.name;
             document.getElementById("description").value = category.description;
-            document.getElementById("brand").value = category.brand || "";
             document.getElementById("isActive").checked = category.active;
 
-            // Switch UI to edit mode
             document.getElementById("formTitle").textContent = `Edit Category #${category.id}`;
             document.getElementById("submitBtn").textContent = "Update Category";
             document.getElementById("submitBtn").classList.remove("btn-success");

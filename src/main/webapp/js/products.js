@@ -1,14 +1,25 @@
+let searchDebounce = null;
+
 document.addEventListener("DOMContentLoaded", () => {
-    fetchProducts();
     loadCategoryOptions();
+    fetchProducts();
 
     document.getElementById("productForm").addEventListener("submit", saveProduct);
     document.getElementById("cancelBtn").addEventListener("click", resetForm);
 
+    // Debounced text inputs (300ms after typing stops, so we don't fire on every keystroke)
+    document.getElementById("searchInput").addEventListener("input", debouncedFetch);
+    document.getElementById("priceMin").addEventListener("input", debouncedFetch);
+    document.getElementById("priceMax").addEventListener("input", debouncedFetch);
+
+    // Instant filters (dropdowns fire only on change, no debounce needed)
+    document.getElementById("categoryFilter").addEventListener("change", fetchProducts);
+    document.getElementById("stockFilter").addEventListener("change", fetchProducts);
+    document.getElementById("clearFiltersBtn").addEventListener("click", clearFilters);
+
     // Live image preview
     const imageInput = document.getElementById("image");
     const imagePreview = document.getElementById("imagePreview");
-
     imageInput.addEventListener("input", () => {
         const url = imageInput.value.trim();
         if (url) {
@@ -18,71 +29,124 @@ document.addEventListener("DOMContentLoaded", () => {
             imagePreview.classList.add("d-none");
         }
     });
-
-    imagePreview.addEventListener("error", () => {
-        imagePreview.classList.add("d-none");
-    });
+    imagePreview.addEventListener("error", () => imagePreview.classList.add("d-none"));
 });
 
-function fetchProducts() {
-    fetch('api/products')
-        .then(response => response.json())
-        .then(data => {
-            const tableBody = document.getElementById("productTableBody");
-            tableBody.innerHTML = "";
+function debouncedFetch() {
+    clearTimeout(searchDebounce);
+    searchDebounce = setTimeout(fetchProducts, 300);
+}
 
-            data.forEach(product => {
-                const stockBadge = product.stock > 10
-                    ? `<span class="badge bg-success">${product.stock}</span>`
+// Builds the query string from the current filter inputs
+function buildQueryString() {
+    const search   = document.getElementById("searchInput").value.trim();
+    const category = document.getElementById("categoryFilter").value;
+    const stock    = document.getElementById("stockFilter").value;
+    const priceMin = document.getElementById("priceMin").value;
+    const priceMax = document.getElementById("priceMax").value;
+
+    const params = new URLSearchParams();
+    if (search) params.append("search", search);
+    if (category && category !== "all") params.append("category", category);
+    if (stock && stock !== "all") params.append("stock", stock);
+    if (priceMin) params.append("priceMin", priceMin);
+    if (priceMax) params.append("priceMax", priceMax);
+
+    const query = params.toString();
+    return query ? `?${query}` : "";
+}
+
+function fetchProducts() {
+    fetch('api/products' + buildQueryString())
+        .then(response => response.json())
+        .then(renderProducts)
+        .catch(error => console.error("Error fetching products:", error));
+}
+
+function renderProducts(products) {
+    const tableBody = document.getElementById("productTableBody");
+    tableBody.innerHTML = "";
+
+    if (products.length === 0) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="7" class="text-center text-muted py-4">
+                    No products match your filters.
+                </td>
+            </tr>`;
+    } else {
+        products.forEach(product => {
+            const stockBadge = product.stock > 10
+                ? `<span class="badge bg-success">${product.stock}</span>`
+                : product.stock === 0
+                    ? `<span class="badge bg-danger">${product.stock} (Out)</span>`
                     : `<span class="badge bg-warning text-dark">${product.stock} (Low)</span>`;
 
-                const imageCell = product.image
-                    ? `<img src="${product.image}" alt="${product.name}"
-                            style="width: 60px; height: 60px; object-fit: cover;"
-                            class="rounded"
-                            onerror="this.style.display='none'">`
-                    : `<span class="text-muted small">No image</span>`;
+            const imageCell = product.image
+                ? `<img src="${product.image}" alt="${product.name}"
+                        style="width: 60px; height: 60px; object-fit: cover;"
+                        class="rounded"
+                        onerror="this.style.display='none'">`
+                : `<span class="text-muted small">No image</span>`;
 
-                const row = document.createElement("tr");
-                row.innerHTML = `
-                    <td>${product.id}</td>
-                    <td>${imageCell}</td>
-                    <td><strong>${product.name}</strong></td>
-                    <td>${product.idCategory}</td>
-                    <td>€${product.price.toFixed(2)}</td>
-                    <td>${stockBadge}</td>
-                    <td>
-                        <button class="btn btn-sm btn-primary me-1" onclick="editProduct(${product.id})">Edit</button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteProduct(${product.id})">Delete</button>
-                    </td>
-                `;
-                tableBody.appendChild(row);
-            });
-        })
-        .catch(error => console.error("Error fetching products:", error));
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${product.id}</td>
+                <td>${imageCell}</td>
+                <td><strong>${product.name}</strong></td>
+                <td>${product.idCategory}</td>
+                <td>€${product.price.toFixed(2)}</td>
+                <td>${stockBadge}</td>
+                <td>
+                    <button class="btn btn-sm btn-primary me-1" onclick="editProduct(${product.id})">Edit</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteProduct(${product.id})">Delete</button>
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
+    }
+
+    document.getElementById("resultCount").textContent = `${products.length} results`;
+}
+
+function clearFilters() {
+    document.getElementById("searchInput").value = "";
+    document.getElementById("categoryFilter").value = "all";
+    document.getElementById("stockFilter").value = "all";
+    document.getElementById("priceMin").value = "";
+    document.getElementById("priceMax").value = "";
+    fetchProducts();
 }
 
 function loadCategoryOptions() {
     fetch('api/categories')
         .then(response => response.json())
         .then(data => {
-            const select = document.getElementById("categoryId");
-            // Keep the placeholder, remove any other previously loaded options
-            select.querySelectorAll("option:not([disabled])").forEach(opt => opt.remove());
-
-            data.forEach(category => {
-                if (category.active) {
-                    const option = document.createElement("option");
-                    option.value = category.id;
-                    option.textContent = category.name;
-                    select.appendChild(option);
+            // Form select (active categories only — for creating products)
+            const formSelect = document.getElementById("categoryId");
+            formSelect.querySelectorAll("option:not([disabled])").forEach(o => o.remove());
+            data.forEach(c => {
+                if (c.active) {
+                    const o = document.createElement("option");
+                    o.value = c.id;
+                    o.textContent = c.name;
+                    formSelect.appendChild(o);
                 }
             });
+
+            // Filter dropdown (all categories, even inactive ones — for filtering existing products)
+            const filterSelect = document.getElementById("categoryFilter");
+            filterSelect.querySelectorAll("option:not([value='all'])").forEach(o => o.remove());
+            data.forEach(c => {
+                const o = document.createElement("option");
+                o.value = c.id;
+                o.textContent = c.name;
+                filterSelect.appendChild(o);
+            });
         })
-        .catch(error => console.error("Error fetching categories for select:", error));
+        .catch(error => console.error("Error fetching categories:", error));
 }
 
-// Decides whether to POST (create) or PUT (update) based on whether the hidden ID is set
 function saveProduct(event) {
     event.preventDefault();
 
@@ -136,7 +200,6 @@ function editProduct(id) {
             document.getElementById("stockQuantity").value = product.stock;
             document.getElementById("image").value = product.image || "";
 
-            // Show preview if there's an image
             const imagePreview = document.getElementById("imagePreview");
             if (product.image) {
                 imagePreview.src = product.image;
@@ -145,7 +208,6 @@ function editProduct(id) {
                 imagePreview.classList.add("d-none");
             }
 
-            // Switch UI to edit mode
             document.getElementById("formTitle").textContent = `Edit Product #${product.id}`;
             document.getElementById("submitBtn").textContent = "Update Product";
             document.getElementById("submitBtn").classList.remove("btn-success");
