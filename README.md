@@ -115,20 +115,28 @@ http://localhost:8080
 
 The project follows the Git Flow branching model with the following branches:
 
-- **main** – Stable production-ready version
-- **develop** – Integration branch
-- **feature/*** – New feature branches
+<ul>
+  <li><strong>main</strong> – Stable production-ready version</li>
+  <li><strong>develop</strong> – Integration branch</li>
+  <li><strong>feature/*</strong> – New feature branches</li>
+</ul>
 
 All features are developed in separate branches and merged through Pull Requests reviewed by another team member.
+
+---
 
 ## Versioning
 
 The project includes the following version tags:
 
-- **v1.0**
-- **v1.1**
+<ul>
+  <li><strong>v1.0</strong></li>
+  <li><strong>v1.1</strong></li>
+</ul>
 
-The final version, **v1.1**, is published as a GitHub Release.
+The final version, <strong>v1.1</strong>, is published as a GitHub Release.
+
+---
 
 ## License
 
