@@ -24,11 +24,28 @@ public class CategoryServlet extends HttpServlet {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
 
-        List<Category> categories = categoryDAO.getAllCategories();
-        String json = gson.toJson(categories);
-
+        String idParam = request.getParameter("id");
         PrintWriter out = response.getWriter();
-        out.print(json);
+
+        // If ?id=X is given, return a single category. Otherwise, return the full list.
+        if (idParam != null && !idParam.isEmpty()) {
+            try {
+                int id = Integer.parseInt(idParam);
+                Category category = categoryDAO.getCategoryById(id);
+                if (category != null) {
+                    out.print(gson.toJson(category));
+                } else {
+                    response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    out.print("{\"error\": \"Category not found\"}");
+                }
+            } catch (NumberFormatException e) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                out.print("{\"error\": \"Invalid ID\"}");
+            }
+        } else {
+            List<Category> categories = categoryDAO.getAllCategories();
+            out.print(gson.toJson(categories));
+        }
         out.flush();
     }
 
@@ -49,6 +66,34 @@ public class CategoryServlet extends HttpServlet {
         } else {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             out.print("{\"error\": \"Failed to create category\"}");
+        }
+        out.flush();
+    }
+
+    @Override
+    protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
+        BufferedReader reader = request.getReader();
+        Category category = gson.fromJson(reader, Category.class);
+
+        PrintWriter out = response.getWriter();
+
+        if (category == null || category.getId() <= 0) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            out.print("{\"error\": \"Missing or invalid category ID\"}");
+            out.flush();
+            return;
+        }
+
+        boolean success = categoryDAO.updateCategory(category);
+
+        if (success) {
+            out.print("{\"message\": \"Category updated successfully\"}");
+        } else {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            out.print("{\"error\": \"Failed to update category\"}");
         }
         out.flush();
     }

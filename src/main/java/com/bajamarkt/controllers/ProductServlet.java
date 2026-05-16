@@ -24,11 +24,38 @@ public class ProductServlet extends HttpServlet {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
 
-        List<Product> products = productDAO.getAllProducts();
-        String json = gson.toJson(products);
-
+        String idParam = request.getParameter("id");
         PrintWriter out = response.getWriter();
-        out.print(json);
+
+        // ?id=X  → return a single product (used by "Edit")
+        if (idParam != null && !idParam.isEmpty()) {
+            try {
+                int id = Integer.parseInt(idParam);
+                Product product = productDAO.getProductById(id);
+                if (product != null) {
+                    out.print(gson.toJson(product));
+                } else {
+                    response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    out.print("{\"error\": \"Product not found\"}");
+                }
+            } catch (NumberFormatException e) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                out.print("{\"error\": \"Invalid ID\"}");
+            }
+            out.flush();
+            return;
+        }
+
+        // Otherwise: optional search/filter params. Missing/blank ones become null.
+        String search       = nullIfBlank(request.getParameter("search"));
+        Integer idCategory  = parseIntOrNull(request.getParameter("category"));
+        Double priceMin     = parseDoubleOrNull(request.getParameter("priceMin"));
+        Double priceMax     = parseDoubleOrNull(request.getParameter("priceMax"));
+        String stockLevel   = nullIfBlank(request.getParameter("stock"));
+        if ("all".equalsIgnoreCase(stockLevel)) stockLevel = null;
+
+        List<Product> products = productDAO.searchProducts(search, idCategory, priceMin, priceMax, stockLevel);
+        out.print(gson.toJson(products));
         out.flush();
     }
 
@@ -49,6 +76,34 @@ public class ProductServlet extends HttpServlet {
         } else {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             out.print("{\"error\": \"Failed to create product\"}");
+        }
+        out.flush();
+    }
+
+    @Override
+    protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
+        BufferedReader reader = request.getReader();
+        Product product = gson.fromJson(reader, Product.class);
+
+        PrintWriter out = response.getWriter();
+
+        if (product == null || product.getId() <= 0) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            out.print("{\"error\": \"Missing or invalid product ID\"}");
+            out.flush();
+            return;
+        }
+
+        boolean success = productDAO.updateProduct(product);
+
+        if (success) {
+            out.print("{\"message\": \"Product updated successfully\"}");
+        } else {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            out.print("{\"error\": \"Failed to update product\"}");
         }
         out.flush();
     }
@@ -76,5 +131,20 @@ public class ProductServlet extends HttpServlet {
             out.print("{\"error\": \"Missing product ID\"}");
         }
         out.flush();
+    }
+
+    // --- helpers ---
+    private static String nullIfBlank(String s) {
+        return (s == null || s.isBlank()) ? null : s;
+    }
+
+    private static Integer parseIntOrNull(String s) {
+        if (s == null || s.isBlank() || "all".equalsIgnoreCase(s)) return null;
+        try { return Integer.parseInt(s); } catch (NumberFormatException e) { return null; }
+    }
+
+    private static Double parseDoubleOrNull(String s) {
+        if (s == null || s.isBlank()) return null;
+        try { return Double.parseDouble(s); } catch (NumberFormatException e) { return null; }
     }
 }
